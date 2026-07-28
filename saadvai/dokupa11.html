@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Class 9 Cloud Study Portal</title>
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <style>
+        :root {
+            --bg-primary: #0b0f19;
+            --bg-surface: #151c2c;
+            --bg-card: rgba(30, 41, 59, 0.7);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            --accent-glow: rgba(99, 102, 241, 0.35);
+            --card-hover-border: #818cf8;
+            --font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif;
+        }
+
+        [data-theme="emerald"] {
+            --bg-primary: #061712;
+            --bg-surface: #0b2920;
+            --bg-card: rgba(16, 185, 129, 0.08);
+            --border-color: rgba(16, 185, 129, 0.2);
+            --text-primary: #ecfdf5;
+            --text-secondary: #6ee7b7;
+            --accent-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            --accent-glow: rgba(16, 185, 129, 0.4);
+            --card-hover-border: #34d399;
+        }
+
+        [data-theme="cyberpunk"] {
+            --bg-primary: #080811;
+            --bg-surface: #121124;
+            --bg-card: rgba(236, 72, 153, 0.08);
+            --border-color: rgba(236, 72, 153, 0.3);
+            --text-primary: #fff;
+            --text-secondary: #f472b6;
+            --accent-gradient: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+            --accent-glow: rgba(236, 72, 153, 0.5);
+            --card-hover-border: #f472b6;
+        }
+
+        [data-theme="sunset"] {
+            --bg-primary: #180c0a;
+            --bg-surface: #2a1612;
+            --bg-card: rgba(249, 115, 22, 0.08);
+            --border-color: rgba(249, 115, 22, 0.2);
+            --text-primary: #fff7ed;
+            --text-secondary: #fdba74;
+            --accent-gradient: linear-gradient(135deg, #f97316 0%, #eab308 100%);
+            --accent-glow: rgba(249, 115, 22, 0.4);
+            --card-hover-border: #fb923c;
+        }
+
+        [data-theme="nordic"] {
+            --bg-primary: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-card: #ffffff;
+            --border-color: #e2e8f0;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --accent-gradient: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+            --accent-glow: rgba(37, 99, 235, 0.2);
+            --card-hover-border: #3b82f6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-family);
+            transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border-color);
+            padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 800;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .theme-select {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 6px 10px;
+            border-radius: 8px;
+            outline: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .btn {
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: none;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.25s ease;
+        }
+
+        .btn-gradient {
+            background: var(--accent-gradient);
+            color: #fff;
+            box-shadow: 0 4px 15px var(--accent-glow);
+        }
+
+        .btn-gradient:active {
+            transform: scale(0.98);
+        }
+
+        .btn-glass {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-danger { background: #ef4444; color: #fff; }
+        .btn-warning { background: #f59e0b; color: #fff; }
+
+        main {
+            max-width: 1100px;
+            width: 92%;
+            margin: 20px auto;
+            flex-grow: 1;
+        }
+
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .app-header h2 {
+            font-size: 1.3rem;
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 16px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover, .card:active {
+            border-color: var(--card-hover-border);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .card-icon {
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            background: var(--accent-gradient);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; color: #fff;
+        }
+
+        .badge {
+            background: var(--bg-surface);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .card h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 6px; }
+        .card p { color: var(--text-secondary); font-size: 0.85rem; line-height: 1.4; }
+
+        .note-container {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            line-height: 1.7;
+            font-size: 1rem;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000; opacity: 0; pointer-events: none;
+            transition: opacity 0.3s;
+            padding: 12px;
+        }
+
+        .modal.active { opacity: 1; pointer-events: all; }
+
+        .modal-body {
+            background: var(--bg-surface);
+            width: 100%; max-width: 600px;
+            border-radius: 16px; padding: 20px;
+            border: 1px solid var(--border-color);
+            max-height: 90vh; overflow-y: auto;
+        }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.85rem; color: var(--text-secondary); }
+        .form-control {
+            width: 100%; padding: 10px 12px;
+            border-radius: 8px; border: 1px solid var(--border-color);
+            background: var(--bg-primary); color: var(--text-primary);
+            outline: none; font-size: 0.95rem;
+        }
+
+        textarea.form-control { height: 100px; resize: vertical; }
+
+        .hidden { display: none !important; }
+
+        .admin-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px; border-bottom: 1px solid var(--border-color); gap: 8px;
+        }
+
+        .section-box {
+            background: var(--bg-primary); padding: 15px;
+            border-radius: 12px; margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+        }
+
+        .status-badge {
+            font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; font-weight: 600;
+        }
+        .online { background: #10b98122; color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+
+        /* Mobile Adjustments */
+        @media (max-width: 600px) {
+            header { padding: 12px 15px; }
+            .logo span { font-size: 1.1rem; }
+            .status-badge { display: none; } /* Hide status text on small mobile screens */
+            .grid-layout { grid-template-columns: 1fr; }
+            main { margin: 15px auto; }
+            .note-container { padding: 15px; font-size: 0.95rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <i class="fa-solid fa-cloud"></i>
+            <span>Class 9 Portal</span>
+        </div>
+        <div class="nav-controls">
+            <span class="status-badge online"><i class="fa-solid fa-wifi"></i> Synced</span>
+            <select class="theme-select" onchange="changeTheme(this.value)">
+                <option value="indigo">🟣 Indigo</option>
+                <option value="emerald">🟢 Emerald</option>                <option value="cyberpunk">🔴 Cyber</option>
+                <option value="sunset">🟠 Sunset</option>
+                <option value="nordic">⚪ Nordic</option>
+            </select>
+            <button class="btn btn-gradient" onclick="openAdminModal()">
+                <i class="fa-solid fa-user-gear"></i> অ্যাডমিন
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <div class="app-header">
+            <div>
+                <button id="backBtn" class="btn btn-glass hidden" onclick="goBack()">
+                    <i class="fa-solid fa-arrow-left"></i> পেছনে
+                </button>
+                <h2 id="pageTitle" style="display:inline-block; margin-left:6px;">সকল বিষয়সমূহ</h2>
+            </div>
+        </div>
+
+        <div id="subjectsGrid" class="grid-layout"></div>
+        <div id="chaptersGrid" class="grid-layout hidden"></div>
+        <div id="noteViewer" class="note-container hidden"></div>
+    </main>
+
+    <!-- Admin Modal -->
+    <div class="modal" id="adminModal">
+        <div class="modal-body">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h3 style="font-size: 1.1rem;"><i class="fa-solid fa-shield-halved"></i> অ্যাডমিন প্যানেল</h3>
+                <button class="btn btn-glass" onclick="closeAdminModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div id="authScreen">
+                <p style="margin-bottom: 12px; color: var(--text-secondary); font-size: 0.9rem;">পাসওয়ার্ড লিখুন </p>
+                <div class="form-group">
+                    <input type="password" id="adminPassword" class="form-control" placeholder="পাসওয়ার্ড...">
+                </div>
+                <button class="btn btn-gradient" onclick="loginAdmin()" style="width: 100%; justify-content: center;">লগইন</button>
+            </div>
+
+            <div id="adminPanelControls" class="hidden">
+                <div class="section-box">
+                    <h4 style="font-size: 0.95rem;">১. নতুন বিষয় যোগ করুন</h4>
+                    <div class="form-group" style="margin-top:10px;">
+                        <input type="text" id="newSubName" class="form-control" placeholder="বিষয়ের নাম (যেমন: Physics)">
+                    </div>
+                    <button class="btn btn-gradient" onclick="createSubject()">বিষয় সেভ করুন</button>
+                </div>
+
+                <div class="section-box">
+                    <h4 id="formTitle" style="font-size: 0.95rem;">২. অধ্যায় ও নোট যোগ / এডিট করুন</h4>
+                    <input type="hidden" id="editingChapterIndex" value="-1">
+                    
+                    <div class="form-group" style="margin-top:10px;">
+                        <label>বিষয় নির্বাচন করুন</label>
+                        <select id="subSelectDropdown" class="form-control" onchange="loadChaptersForAdmin()"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>অধ্যায়ের নাম</label>
+                        <input type="text" id="newChTitle" class="form-control" placeholder="অধ্যায়ের নাম">
+                    </div>
+                    <div class="form-group">
+                        <label>নোটের বিষয়বস্তু</label>
+                        <textarea id="newNoteBody" class="form-control" placeholder="এখানে নোট লিখুন..."></textarea>
+                    </div>
+                    
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn btn-gradient" id="saveChapterBtn" onclick="saveChapterAndNote()">ক্লাউডে সেভ করুন</button>
+                        <button class="btn btn-glass hidden" id="cancelEditBtn" onclick="resetForm()">বাতিল</button>
+                    </div>
+                </div>
+
+                <div class="section-box">
+                    <h4 style="font-size: 0.95rem;">অধ্যায়সমূহ পরিচালনা (Edit/Delete)</h4>
+                    <div id="adminChaptersList"></div>
+                </div>
+
+                <div class="section-box">
+                    <h4 style="color: #ef4444; font-size: 0.95rem;">বিষয় ডিলিট করুন</h4>
+                    <div id="adminDeleteList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCY3Y2pPELnGMLq_y4VqZWBppxh4x6mi40",
+            authDomain: "my-chat-34177.firebaseapp.com",
+            databaseURL: "https://my-chat-34177-default-rtdb.firebaseio.com",
+            projectId: "my-chat-34177",
+            storageBucket: "my-chat-34177.firebasestorage.app",
+            messagingSenderId: "690847670585",
+            appId: "1:690847670585:web:3c6e2de7784290a44148e8"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        let db = {};
+        let viewState = 'subjects';
+        let activeSubject = null;
+
+        // Realtime Cloud Synchronization
+        database.ref('study_portal').on('value', (snapshot) => {
+            db = snapshot.val() || {};
+            if (viewState === 'subjects') renderSubjects();
+            else if (viewState === 'chapters') renderChapters(activeSubject);
+            populateDropdown();
+            loadChaptersForAdmin();
+            renderAdminSubjectDeleteList();
+        });
+
+        function saveToCloud() {
+            database.ref('study_portal').set(db);
+        }
+
+        function changeTheme(themeName) {
+            if (themeName === 'indigo') document.documentElement.removeAttribute('data-theme');
+            else document.documentElement.setAttribute('data-theme', themeName);
+        }
+
+        function renderSubjects() {
+            viewState = 'subjects';
+            activeSubject = null;
+            document.getElementById('pageTitle').innerText = "সকল বিষয়সমূহ";
+            document.getElementById('backBtn').classList.add('hidden');
+
+            const grid = document.getElementById('subjectsGrid');
+            document.getElementById('chaptersGrid').classList.add('hidden');
+            document.getElementById('noteViewer').classList.add('hidden');
+            grid.classList.remove('hidden');
+            grid.innerHTML = "";
+
+            if (Object.keys(db).length === 0) {
+                grid.innerHTML = `<p style="color:var(--text-secondary); grid-column: 1/-1;">কোনো বিষয় যুক্ত করা নেই। অ্যাডমিন প্যানেল থেকে বিষয় যোগ করুন।</p>`;
+                return;
+            }
+
+            Object.keys(db).forEach(key => {
+                const item = db[key];
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.onclick = () => renderChapters(key);
+                card.innerHTML = `
+                    <div>
+                        <div class="card-header">
+                            <div class="card-icon"><i class="fa-solid fa-book"></i></div>
+                            <span class="badge">${item.chapters ? item.chapters.length : 0} টি অধ্যায়</span>
+                        </div>
+                        <h3>${item.name}</h3>
+                        <p>নোটস পড়তে ক্লিক করুন</p>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function renderChapters(subjectKey) {
+            viewState = 'chapters';
+            activeSubject = subjectKey;
+            const subject = db[subjectKey];
+            if (!subject) return renderSubjects();
+
+            document.getElementById('pageTitle').innerText = subject.name;
+            document.getElementById('backBtn').classList.remove('hidden');
+
+            const grid = document.getElementById('chaptersGrid');
+            document.getElementById('subjectsGrid').classList.add('hidden');
+            document.getElementById('noteViewer').classList.add('hidden');
+            grid.classList.remove('hidden');
+            grid.innerHTML = "";
+
+            if (!subject.chapters || subject.chapters.length === 0) {
+                grid.innerHTML = `<p style="color:var(--text-secondary); grid-column: 1/-1;">কোনো অধ্যায় নেই!</p>`;
+                return;
+            }
+
+            subject.chapters.forEach((ch, idx) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.onclick = () => renderNote(idx);
+                card.innerHTML = `
+                    <div>
+                        <div class="card-header">
+                            <div class="card-icon" style="background:var(--bg-surface);"><i class="fa-solid fa-file-alt"></i></div>
+                            <span class="badge">নোট দেখুন</span>
+                        </div>
+                        <h3>${ch.title}</h3>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function renderNote(index) {
+            viewState = 'note';
+            const chapter = db[activeSubject].chapters[index];
+            document.getElementById('pageTitle').innerText = chapter.title;
+
+            const viewer = document.getElementById('noteViewer');
+            document.getElementById('subjectsGrid').classList.add('hidden');
+            document.getElementById('chaptersGrid').classList.add('hidden');
+            viewer.classList.remove('hidden');
+            viewer.innerText = chapter.note;
+        }
+
+        function goBack() {
+            if (viewState === 'note') renderChapters(activeSubject);
+            else if (viewState === 'chapters') renderSubjects();
+        }
+
+        /* --- ADMIN LOGIC --- */
+        function openAdminModal() { document.getElementById('adminModal').classList.add('active'); }
+        function closeAdminModal() { document.getElementById('adminModal').classList.remove('active'); }
+
+        function loginAdmin() {
+            if (document.getElementById('adminPassword').value === 'mahi') {
+                document.getElementById('authScreen').classList.add('hidden');
+                document.getElementById('adminPanelControls').classList.remove('hidden');
+            } else alert('ভুল পাসওয়ার্ড!');
+        }
+
+        function populateDropdown() {
+            const dropdown = document.getElementById('subSelectDropdown');
+            if(!dropdown) return;
+            dropdown.innerHTML = '';
+            Object.keys(db).forEach(k => {
+                dropdown.innerHTML += `<option value="${k}">${db[k].name}</option>`;
+            });
+        }
+
+        function createSubject() {
+            const name = document.getElementById('newSubName').value.trim();
+            if (!name) return alert('নাম লিখুন!');
+            const key = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+            db[key] = { name: name, chapters: [] };
+            saveToCloud();
+            document.getElementById('newSubName').value = '';
+            alert('বিষয় যোগ করা হয়েছে!');
+        }
+
+        function saveChapterAndNote() {
+            const key = document.getElementById('subSelectDropdown').value;
+            const title = document.getElementById('newChTitle').value.trim();
+            const note = document.getElementById('newNoteBody').value.trim();
+            const editIndex = parseInt(document.getElementById('editingChapterIndex').value);
+
+            if (!key || !title || !note) return alert('সব ফিল্ড পূরণ করুন!');
+
+            if (!db[key].chapters) db[key].chapters = [];
+
+            if (editIndex === -1) {
+                db[key].chapters.push({ title, note });
+            } else {
+                db[key].chapters[editIndex] = { title, note };
+            }
+
+            saveToCloud();
+            resetForm();
+            alert('নোট ক্লাউডে সেভ হয়েছে!');
+        }
+
+        function editChapter(subKey, index) {
+            const chapter = db[subKey].chapters[index];
+            document.getElementById('subSelectDropdown').value = subKey;
+            document.getElementById('newChTitle').value = chapter.title;
+            document.getElementById('newNoteBody').value = chapter.note;
+            document.getElementById('editingChapterIndex').value = index;
+            document.getElementById('formTitle').innerText = "অধ্যায় এডিট করুন";
+            document.getElementById('cancelEditBtn').classList.remove('hidden');
+        }
+
+        function deleteChapter(subKey, index) {
+            if (confirm('অধ্যায়টি ডিলিট করতে চান?')) {
+                db[subKey].chapters.splice(index, 1);
+                saveToCloud();
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('newChTitle').value = '';
+            document.getElementById('newNoteBody').value = '';
+            document.getElementById('editingChapterIndex').value = "-1";
+            document.getElementById('formTitle').innerText = "২. অধ্যায় ও নোট যোগ / এডিট করুন";
+            document.getElementById('cancelEditBtn').classList.add('hidden');
+        }
+
+        function loadChaptersForAdmin() {
+            const subKey = document.getElementById('subSelectDropdown')?.value;
+            const list = document.getElementById('adminChaptersList');
+            if(!list || !subKey || !db[subKey] || !db[subKey].chapters) {
+                if(list) list.innerHTML = `<p style="color:var(--text-secondary); font-size:0.85rem;">কোনো অধ্যায় নেই</p>`;
+                return;
+            }
+
+            list.innerHTML = '';
+            db[subKey].chapters.forEach((ch, idx) => {
+                list.innerHTML += `
+                    <div class="admin-row">
+                        <span style="font-size:0.85rem;"><b>${ch.title}</b></span>
+                        <div style="display:flex; gap:6px;">
+                            <button class="btn btn-warning" onclick="editChapter('${subKey}', ${idx})">এডিট</button>
+                            <button class="btn btn-danger" onclick="deleteChapter('${subKey}', ${idx})">ডিলিট</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function removeSubject(key) {
+            if (confirm('সম্পূর্ণ বিষয় মুছে ফেলতে চান?')) {
+                delete db[key];
+                saveToCloud();
+            }
+        }
+
+        function renderAdminSubjectDeleteList() {
+            const list = document.getElementById('adminDeleteList');
+            if(!list) return;
+            list.innerHTML = '';
+            Object.keys(db).forEach(k => {
+                list.innerHTML += `
+                    <div class="admin-row">
+                        <span style="font-size:0.85rem;"><b>${db[k].name}</b></span>
+                        <button class="btn btn-danger" onclick="removeSubject('${k}')">ডিলিট</button>
+                    </div>
+                `;
+            });
+        }
+    </script>
+</body>
+</html>
